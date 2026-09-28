@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Practical 2 – Registration Form with Validators | ASP.NET</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:          #0f1117;
+            --surface:     #1a1d27;
+            --surface2:    #22263a;
+            --border:      #2e3250;
+            --accent:      #6c63ff;
+            --accent-soft: #3d3a6e;
+            --green:       #3ecf8e;
+            --yellow:      #f5c842;
+            --red:         #ff6b6b;
+            --text:        #e2e4f0;
+            --text-muted:  #8b90b0;
+            --code-bg:     #12141e;
+            --sidebar-w:   260px;
+            --radius:      10px;
+            --font:        'Inter', sans-serif;
+            --mono:        'JetBrains Mono', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+            font-size: 15px;
+            line-height: 1.75;
+        }
+
+        /* ── Sidebar ─────────────────────────────────────── */
+        #sidebar {
+            width: var(--sidebar-w);
+            flex-shrink: 0;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            overflow-y: auto;
+            padding: 28px 0 40px;
+            z-index: 100;
+        }
+
+        #sidebar .brand {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        #sidebar .brand span {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 3px 9px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        #sidebar .brand h1 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        #sidebar nav a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 20px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s, background 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        #sidebar nav a:hover,
+        #sidebar nav a.active {
+            color: var(--text);
+            background: var(--surface2);
+            border-left-color: var(--accent);
+        }
+
+        #sidebar nav a .num {
+            font-size: 11px;
+            color: var(--accent);
+            font-weight: 700;
+            min-width: 20px;
+        }
+
+        /* ── Main ────────────────────────────────────────── */
+        #main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            padding: 48px 60px 80px;
+            max-width: 960px;
+        }
+
+        /* ── Page Header ─────────────────────────────────── */
+        .page-header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 28px;
+            margin-bottom: 48px;
+        }
+
+        .page-header .badge {
+            display: inline-block;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+        }
+
+        .page-header h1 {
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1.3;
+            color: #fff;
+            margin-bottom: 14px;
+        }
+
+        .page-header .meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .page-header .meta span {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .page-header .meta .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; }
+
+        /* ── Sections ────────────────────────────────────── */
+        section { margin-bottom: 52px; scroll-margin-top: 24px; }
+
+        section h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        section h2 .sec-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        section h3 { font-size: 15px; font-weight: 600; color: var(--text); margin: 22px 0 10px; }
+        section p  { color: var(--text-muted); margin-bottom: 14px; }
+
+        section ul { list-style: none; padding: 0; margin-bottom: 14px; }
+        section ul li { color: var(--text-muted); padding: 4px 0 4px 20px; position: relative; }
+        section ul li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-size: 12px; }
+
+        /* ── Note boxes ──────────────────────────────────── */
+        .note {
+            background: var(--surface2);
+            border-left: 4px solid var(--accent);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            padding: 14px 18px;
+            margin: 16px 0;
+            font-size: 13.5px;
+            color: var(--text-muted);
+        }
+        .note strong { color: var(--text); }
+        .note-na {
+            background: var(--surface2);
+            border-left: 4px solid var(--text-muted);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            padding: 14px 18px;
+            margin: 16px 0;
+            font-size: 13.5px;
+            color: var(--text-muted);
+        }
+
+        /* Validator cards */
+        .validator-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+        }
+        .validator-card h3 {
+            margin: 0 0 10px;
+            color: var(--yellow);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .validator-card h3::before { content: '⚡'; font-size: 16px; }
+
+        /* ── Code blocks ─────────────────────────────────── */
+        .code-wrap {
+            position: relative;
+            margin: 16px 0;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface2);
+            padding: 8px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-header .lang-tag {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+        }
+
+        .copy-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-family: var(--font);
+            font-size: 11.5px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .copy-btn.copied { background: var(--green); border-color: var(--green); color: #0f1117; }
+        .copy-btn svg { width: 13px; height: 13px; }
+
+        pre {
+            background: var(--code-bg);
+            padding: 20px;
+            overflow-x: auto;
+            font-family: var(--mono);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        code { font-family: var(--mono); }
+
+        .diagram-wrap pre {
+            background: var(--surface2);
+            color: var(--text-muted);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            padding: 18px 20px;
+            font-size: 13px;
+            line-height: 1.9;
+        }
+
+        /* ── Tables ──────────────────────────────────────── */
+        .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        th { background: var(--surface2); color: var(--text); font-weight: 600; text-align: left; padding: 11px 14px; border-bottom: 2px solid var(--accent); }
+        td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+        td code, th code { background: var(--surface2); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; font-size: 12px; color: var(--accent); }
+        tr:hover td { background: var(--surface2); }
+
+        /* ── Steps ───────────────────────────────────────── */
+        .steps { counter-reset: step; list-style: none; padding: 0; }
+        .steps li {
+            counter-increment: step;
+            padding: 10px 0 10px 26px;
+            position: relative;
+            color: var(--text-muted);
+            border-left: 2px solid var(--border);
+            margin-left: 14px;
+        }
+        .steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: -14px; top: 10px;
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ── Trouble cards ───────────────────────────────── */
+        .trouble-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 16px;
+        }
+        .trouble-card h3 { margin: 0 0 10px; color: var(--red); font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .trouble-card h3::before { content: '⚠'; font-size: 15px; }
+        .trouble-card p  { font-size: 13.5px; margin-bottom: 10px; }
+        .trouble-card ul li { font-size: 13.5px; }
+
+        /* ── Result banner ───────────────────────────────── */
+        .result-banner {
+            background: linear-gradient(135deg, #1e2a4a, #1a2d3f);
+            border: 1px solid var(--accent);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .result-banner .icon { font-size: 28px; flex-shrink: 0; }
+        .result-banner p { color: var(--text); margin: 0; font-size: 14.5px; line-height: 1.8; }
+
+        /* ── Output scenarios ────────────────────────────── */
+        .output-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+        .output-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+        .output-box h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+        .output-box.invalid h4 { color: var(--red); }
+        .output-box.valid   h4 { color: var(--green); }
+        .output-box pre { background: transparent; padding: 0; font-size: 12px; color: var(--text-muted); }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        @media (max-width: 800px) {
+            #sidebar { display: none; }
+            #main { margin-left: 0; padding: 28px 20px 60px; }
+            .output-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════  SIDEBAR  ═══════════════════ -->
+<aside id="sidebar">
+    <div class="brand">
+        <span>ASP.NET</span>
+        <h1>Practical 2<br/>Registration Form</h1>
+    </div>
+    <nav id="toc">
+        <a href="#aim"       ><span class="num">01</span> Aim</a>
+        <a href="#intro"     ><span class="num">02</span> Introduction</a>
+        <a href="#tech"      ><span class="num">03</span> Technology Used</a>
+        <a href="#db"        ><span class="num">04</span> Database Setup</a>
+        <a href="#create"    ><span class="num">05</span> Create Project</a>
+        <a href="#structure" ><span class="num">06</span> Folder Structure</a>
+        <a href="#pagestr"   ><span class="num">07</span> Page Structure</a>
+        <a href="#design"    ><span class="num">08</span> Page Design</a>
+        <a href="#validators"><span class="num">09</span> Understanding Validators</a>
+        <a href="#aspx"      ><span class="num">10</span> Default.aspx</a>
+        <a href="#codebehind"><span class="num">11</span> Default.aspx.cs</a>
+        <a href="#isvalid"   ><span class="num">12</span> Page.IsValid</a>
+        <a href="#flow"      ><span class="num">13</span> How It Works</a>
+        <a href="#output"    ><span class="num">14</span> Expected Output</a>
+        <a href="#controls"  ><span class="num">15</span> Controls Table</a>
+        <a href="#trouble"   ><span class="num">16</span> Troubleshooting</a>
+        <a href="#result"    ><span class="num">17</span> Result</a>
+    </nav>
+</aside>
+
+<!-- ═══════════════════  MAIN  ═══════════════════ -->
+<main id="main">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="badge">Practical 2</div>
+        <h1>Registration Form with<br/>ASP.NET Validation Controls</h1>
+        <div class="meta">
+            <span><span class="dot"></span> ASP.NET Web Forms</span>
+            <span>· RequiredFieldValidator</span>
+            <span>· RangeValidator</span>
+            <span>· CompareValidator</span>
+        </div>
+    </div>
+
+    <!-- 1. Aim -->
+    <section id="aim">
+        <h2><span class="sec-num">1</span> Aim</h2>
+        <p>To create a Registration Form in ASP.NET using:</p>
+        <ul>
+            <li>RequiredFieldValidator</li>
+            <li>RangeValidator</li>
+            <li>CompareValidator</li>
+        </ul>
+    </section>
+
+    <!-- 2. Introduction -->
+    <section id="intro">
+        <h2><span class="sec-num">2</span> Introduction</h2>
+        <p><strong>Validation Controls</strong> in ASP.NET automatically validate form input before data is processed on the server. They display error messages directly on the webpage without writing manual C# validation code.</p>
+        <div class="diagram-wrap">
+            <pre>
+User fills Registration Form
+          ↓
+    Clicks Register Button
+          ↓
+  Validation Controls check input
+          ↓
+      ┌─────────────┐
+      │  All Valid? │
+      └─────────────┘
+        ↓         ↓
+       Yes        No
+        ↓         ↓
+   Success     Error messages
+   Message     shown on page</pre>
+        </div>
+        <p>Three validators are used in this practical:</p>
+        <div class="diagram-wrap">
+            <pre>
+RequiredFieldValidator  →  Ensures a field is not left empty
+RangeValidator          →  Ensures a value falls within a range
+CompareValidator        →  Ensures two field values match</pre>
+        </div>
+    </section>
+
+    <!-- 3. Technology Used -->
+    <section id="tech">
+        <h2><span class="sec-num">3</span> Technology Used</h2>
+        <ul>
+            <li>C#</li>
+            <li>ASP.NET Web Forms</li>
+            <li>ASP.NET Validation Controls</li>
+            <li>Visual Studio</li>
+        </ul>
+        <div class="note">
+            <strong>Note:</strong> This practical uses a <strong>.NET Framework ASP.NET Web Forms project</strong>, not the modern ASP.NET Core templates.
+        </div>
+    </section>
+
+    <!-- 4. Database Setup -->
+    <section id="db">
+        <h2><span class="sec-num">4</span> Database Setup</h2>
+        <div class="note-na">No database is required for this practical.</div>
+    </section>
+
+    <!-- 5. Create Project -->
+    <section id="create">
+        <h2><span class="sec-num">5</span> Create ASP.NET Web Forms Application</h2>
+        <p>Open <strong>Visual Studio</strong> and follow these steps:</p>
+        <ol class="steps">
+            <li>Click <strong>Create a new project</strong>.</li>
+            <li>Search for and select <strong>ASP.NET Web Application (.NET Framework)</strong>.</li>
+            <li>Click <strong>Next</strong>.</li>
+            <li>Enter the project name:
+                <div class="code-wrap" style="margin-top:10px;">
+                    <div class="code-header"><span class="lang-tag">text</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+                    <pre>Project Name: RegistrationFormApp</pre>
+                </div>
+            </li>
+            <li>Select the required location and click <strong>Create</strong>.</li>
+            <li>Select <strong>Web Forms</strong> and click <strong>Create</strong>.</li>
+        </ol>
+    </section>
+
+    <!-- 6. Folder Structure -->
+    <section id="structure">
+        <h2><span class="sec-num">6</span> Project Folder Structure</h2>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">text</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>
+RegistrationFormApp/
+│
+├── App_Data/
+├── Content/
+├── Scripts/
+│
+├── Default.aspx
+├── Default.aspx.cs
+├── Default.aspx.designer.cs
+│
+├── Global.asax
+├── Site.Master
+├── Web.config
+│
+└── RegistrationFormApp.csproj</pre>
+        </div>
+        <div class="tbl-wrap">
+            <table>
+                <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td><code>Default.aspx</code></td><td>Registration form UI and all validator controls</td></tr>
+                    <tr><td><code>Default.aspx.cs</code></td><td>C# code-behind for form submission logic</td></tr>
+                    <tr><td><code>Default.aspx.designer.cs</code></td><td>Auto-generated control declarations</td></tr>
+                    <tr><td><code>Web.config</code></td><td>Application configuration</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 7. Page Structure -->
+    <section id="pagestr">
+        <h2><span class="sec-num">7</span> Page Structure</h2>
+        <div class="diagram-wrap">
+            <pre>
+Default.aspx
+     ↓
+  Form Controls
+  ├── TextBox (Full Name)        + RequiredFieldValidator
+  ├── TextBox (Age)              + RequiredFieldValidator
+  │                              + RangeValidator (18–100)
+  ├── TextBox (Password)         + RequiredFieldValidator
+  ├── TextBox (Confirm Password) + RequiredFieldValidator
+  │                              + CompareValidator
+  ├── Button  (Register)
+  ├── ValidationSummary          → lists all errors at top
+  └── Label   (Success message)
+
+Default.aspx.cs
+     ↓
+  btnRegister_Click
+     ↓
+  Page.IsValid check
+     ↓
+  Show success message</pre>
+        </div>
+    </section>
+
+    <!-- 8. Page Design -->
+    <section id="design">
+        <h2><span class="sec-num">8</span> Design the Webpage</h2>
+        <div class="diagram-wrap">
+            <pre>
+┌────────────────────────────────────────────────────┐
+│                                                    │
+│              REGISTRATION FORM                     │
+│                                                    │
+│  • Full Name is required.                          │
+│  • Age must be between 18 and 100.                 │
+│  • Passwords do not match.                         │
+│                                                    │
+│  Full Name  :  [__________________________]        │
+│                * Full Name is required.            │
+│                                                    │
+│  Age (18–100): [__________________________]        │
+│                * Age must be between 18 and 100.   │
+│                                                    │
+│  Password   :  [__________________________]        │
+│                                                    │
+│  Confirm Pwd:  [__________________________]        │
+│                * Passwords do not match.           │
+│                                                    │
+│                   [ Register ]                     │
+│                                                    │
+└────────────────────────────────────────────────────┘</pre>
+        </div>
+    </section>
+
+    <!-- 9. Understanding Validators -->
+    <section id="validators">
+        <h2><span class="sec-num">9</span> Understanding the Validators</h2>
+
+        <div class="validator-card">
+            <h3>RequiredFieldValidator</h3>
+            <p>Ensures a field is not submitted empty.</p>
+            <div class="diagram-wrap">
+                <pre>
+TextBox is empty
+     ↓
+RequiredFieldValidator fires
+     ↓
+Error message shown
+     ↓
+Form is NOT submitted</pre>
+            </div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead><tr><th>Property</th><th>Purpose</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>ControlToValidate</code></td><td>ID of the TextBox to validate</td></tr>
+                        <tr><td><code>ErrorMessage</code></td><td>Message shown in ValidationSummary</td></tr>
+                        <tr><td><code>Text</code></td><td>Message shown inline next to the field</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="validator-card">
+            <h3>RangeValidator</h3>
+            <p>Ensures a numeric or date value falls within a defined minimum and maximum.</p>
+            <div class="diagram-wrap">
+                <pre>
+Age TextBox value = 200
+     ↓
+RangeValidator checks: 18 ≤ value ≤ 100?
+     ↓
+No → Error message shown
+     ↓
+Form is NOT submitted</pre>
+            </div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead><tr><th>Property</th><th>Purpose</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>ControlToValidate</code></td><td>ID of the TextBox to validate</td></tr>
+                        <tr><td><code>MinimumValue</code></td><td>Lower bound of the allowed range</td></tr>
+                        <tr><td><code>MaximumValue</code></td><td>Upper bound of the allowed range</td></tr>
+                        <tr><td><code>Type</code></td><td>Data type: Integer, String, Date, etc.</td></tr>
+                        <tr><td><code>ErrorMessage</code></td><td>Message shown in ValidationSummary</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="validator-card">
+            <h3>CompareValidator</h3>
+            <p>Compares the value of one field with another to ensure they match.</p>
+            <div class="diagram-wrap">
+                <pre>
+Password        →  "abc123"
+Confirm Password→  "xyz999"
+     ↓
+CompareValidator checks: do they match?
+     ↓
+No → Error message shown
+     ↓
+Form is NOT submitted</pre>
+            </div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead><tr><th>Property</th><th>Purpose</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>ControlToValidate</code></td><td>The field being validated (Confirm Password)</td></tr>
+                        <tr><td><code>ControlToCompare</code></td><td>The field to compare against (Password)</td></tr>
+                        <tr><td><code>Operator</code></td><td>Comparison type: Equal, NotEqual, etc.</td></tr>
+                        <tr><td><code>ErrorMessage</code></td><td>Message shown in ValidationSummary</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. Default.aspx -->
+    <section id="aspx">
+        <h2><span class="sec-num">10</span> Complete Default.aspx</h2>
+        <p>Replace the entire contents of <code>Default.aspx</code> with:</p>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">aspx</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>
+&lt;%@ Page Language="C#"
+    AutoEventWireup="true"
+    CodeBehind="Default.aspx.cs"
+    Inherits="RegistrationFormApp.Default" %&gt;
+
+&lt;!DOCTYPE html&gt;
+
+&lt;html&gt;
+&lt;head runat="server"&gt;
+
+    &lt;title&gt;Registration Form&lt;/title&gt;
+
+    &lt;style&gt;
+
+        body
+        {
+            font-family: Arial;
+            margin: 50px;
+            background-color: #f0f4f8;
+        }
+
+        .container
+        {
+            background-color: white;
+            padding: 40px;
+            width: 480px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+        }
+
+        h2
+        {
+            margin-bottom: 24px;
+            color: #333;
+            text-align: center;
+        }
+
+        .field
+        {
+            margin-bottom: 18px;
+        }
+
+        .field label
+        {
+            display: block;
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .field input[type=text],
+        .field input[type=password]
+        {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type=submit]
+        {
+            width: 100%;
+            padding: 11px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        input[type=submit]:hover
+        {
+            background-color: #0056b3;
+        }
+
+        .validator
+        {
+            color: #cc0000;
+            font-size: 12px;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .summary
+        {
+            background-color: #fff3f3;
+            border: 1px solid #f5c6c6;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            color: #cc0000;
+            font-size: 13px;
+        }
+
+        .success
+        {
+            margin-top: 20px;
+            color: #2c7a2c;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+    &lt;/style&gt;
+
+&lt;/head&gt;
+
+&lt;body&gt;
+
+&lt;form id="form1" runat="server"&gt;
+
+    &lt;div class="container"&gt;
+
+        &lt;h2&gt;Registration Form&lt;/h2&gt;
+
+        &lt;asp:ValidationSummary
+            ID="valSummary"
+            runat="server"
+            CssClass="summary"
+            HeaderText="Please fix the following errors:" /&gt;
+
+        &lt;!-- Full Name --&gt;
+        &lt;div class="field"&gt;
+
+            &lt;label&gt;Full Name&lt;/label&gt;
+
+            &lt;asp:TextBox
+                ID="txtName"
+                runat="server" /&gt;
+
+            &lt;asp:RequiredFieldValidator
+                ID="rfvName"
+                runat="server"
+                ControlToValidate="txtName"
+                ErrorMessage="Full Name is required."
+                Text="* Full Name is required."
+                CssClass="validator" /&gt;
+
+        &lt;/div&gt;
+
+        &lt;!-- Age --&gt;
+        &lt;div class="field"&gt;
+
+            &lt;label&gt;Age (18 – 100)&lt;/label&gt;
+
+            &lt;asp:TextBox
+                ID="txtAge"
+                runat="server" /&gt;
+
+            &lt;asp:RequiredFieldValidator
+                ID="rfvAge"
+                runat="server"
+                ControlToValidate="txtAge"
+                ErrorMessage="Age is required."
+                Text="* Age is required."
+                CssClass="validator" /&gt;
+
+            &lt;asp:RangeValidator
+                ID="rvAge"
+                runat="server"
+                ControlToValidate="txtAge"
+                MinimumValue="18"
+                MaximumValue="100"
+                Type="Integer"
+                ErrorMessage="Age must be between 18 and 100."
+                Text="* Age must be between 18 and 100."
+                CssClass="validator" /&gt;
+
+        &lt;/div&gt;
+
+        &lt;!-- Password --&gt;
+        &lt;div class="field"&gt;
+
+            &lt;label&gt;Password&lt;/label&gt;
+
+            &lt;asp:TextBox
+                ID="txtPassword"
+                runat="server"
+                TextMode="Password" /&gt;
+
+            &lt;asp:RequiredFieldValidator
+                ID="rfvPassword"
+                runat="server"
+                ControlToValidate="txtPassword"
+                ErrorMessage="Password is required."
+                Text="* Password is required."
+                CssClass="validator" /&gt;
+
+        &lt;/div&gt;
+
+        &lt;!-- Confirm Password --&gt;
+        &lt;div class="field"&gt;
+
+            &lt;label&gt;Confirm Password&lt;/label&gt;
+
+            &lt;asp:TextBox
+                ID="txtConfirmPassword"
+                runat="server"
+                TextMode="Password" /&gt;
+
+            &lt;asp:RequiredFieldValidator
+                ID="rfvConfirmPassword"
+                runat="server"
+                ControlToValidate="txtConfirmPassword"
+                ErrorMessage="Confirm Password is required."
+                Text="* Confirm Password is required."
+                CssClass="validator" /&gt;
+
+            &lt;asp:CompareValidator
+                ID="cvPassword"
+                runat="server"
+                ControlToValidate="txtConfirmPassword"
+                ControlToCompare="txtPassword"
+                Operator="Equal"
+                ErrorMessage="Passwords do not match."
+                Text="* Passwords do not match."
+                CssClass="validator" /&gt;
+
+        &lt;/div&gt;
+
+        &lt;!-- Register Button --&gt;
+        &lt;asp:Button
+            ID="btnRegister"
+            runat="server"
+            Text="Register"
+            OnClick="btnRegister_Click" /&gt;
+
+        &lt;!-- Success Message --&gt;
+        &lt;div class="success"&gt;
+            &lt;asp:Label
+                ID="lblSuccess"
+                runat="server"
+                Text="" /&gt;
+        &lt;/div&gt;
+
+    &lt;/div&gt;
+
+&lt;/form&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+        </div>
+    </section>
+
+    <!-- 11. Default.aspx.cs -->
+    <section id="codebehind">
+        <h2><span class="sec-num">11</span> Complete Default.aspx.cs</h2>
+        <p>Replace the contents of <code>Default.aspx.cs</code> with:</p>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">c#</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>
+using System;
+
+namespace RegistrationFormApp
+{
+    public partial class Default : System.Web.UI.Page
+    {
+        protected void Page_Load(
+            object sender,
+            EventArgs e)
+        {
+        }
+
+        protected void btnRegister_Click(
+            object sender,
+            EventArgs e)
+        {
+            if (Page.IsValid)
+            {
+                lblSuccess.Text =
+                    "Registration successful! Welcome, "
+                    + txtName.Text.Trim()
+                    + ".";
+            }
+        }
+    }
+}</pre>
+        </div>
+    </section>
+
+    <!-- 12. Page.IsValid -->
+    <section id="isvalid">
+        <h2><span class="sec-num">12</span> Understanding Page.IsValid</h2>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">c#</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>if (Page.IsValid)</pre>
+        </div>
+        <div class="diagram-wrap">
+            <pre>
+All validation controls pass?
+          ↓
+     Page.IsValid = true
+          ↓
+   Execute success logic
+
+Any validation fails?
+          ↓
+     Page.IsValid = false
+          ↓
+   Success logic is skipped
+          ↓
+   Error messages remain on page</pre>
+        </div>
+        <p><code>Page.IsValid</code> is automatically set by ASP.NET based on all validator results on the page.</p>
+    </section>
+
+    <!-- 13. How It Works -->
+    <section id="flow">
+        <h2><span class="sec-num">13</span> How the Application Works</h2>
+        <div class="diagram-wrap">
+            <pre>
+User fills Registration Form
+       ↓
+Clicks Register Button
+       ↓
+Client-side validation runs first
+       ↓
+   ┌────────────────────────────────┐
+   │  RequiredFieldValidator check  │
+   │  RangeValidator check          │
+   │  CompareValidator check        │
+   └────────────────────────────────┘
+              ↓            ↓
+          All pass       Any fail
+              ↓            ↓
+         Page.IsValid  Error messages
+          = true        shown on page
+              ↓
+   btnRegister_Click executes
+              ↓
+   Success message displayed</pre>
+        </div>
+    </section>
+
+    <!-- 14. Expected Output -->
+    <section id="output">
+        <h2><span class="sec-num">14</span> Expected Output</h2>
+        <div class="output-grid">
+            <div class="output-box invalid">
+                <h4>❌ Invalid Submission</h4>
+                <pre>
+Please fix the errors:
+• Full Name is required.
+• Age must be 18–100.
+• Passwords do not match.
+
+Full Name: [              ]
+  * Full Name is required.
+
+Age:       [ 200          ]
+  * Age must be 18–100.
+
+Password:  [              ]
+Confirm:   [              ]
+  * Passwords do not match.</pre>
+            </div>
+            <div class="output-box valid">
+                <h4>✅ Valid Submission</h4>
+                <pre>
+Full Name: [ Rahul        ]
+Age:       [ 21           ]
+Password:  [ ********     ]
+Confirm:   [ ********     ]
+
+        [ Register ]
+
+Registration successful!
+Welcome, Rahul.</pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- 15. Controls Table -->
+    <section id="controls">
+        <h2><span class="sec-num">15</span> Important Controls and Properties</h2>
+        <div class="tbl-wrap">
+            <table>
+                <thead><tr><th>Control / Property</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td><code>RequiredFieldValidator</code></td><td>Ensures the field is not left empty</td></tr>
+                    <tr><td><code>RangeValidator</code></td><td>Ensures value is within a min–max range</td></tr>
+                    <tr><td><code>CompareValidator</code></td><td>Compares two field values</td></tr>
+                    <tr><td><code>ValidationSummary</code></td><td>Displays all error messages in one place</td></tr>
+                    <tr><td><code>ControlToValidate</code></td><td>Links the validator to a specific TextBox</td></tr>
+                    <tr><td><code>ErrorMessage</code></td><td>Message shown in ValidationSummary</td></tr>
+                    <tr><td><code>Text</code></td><td>Message shown inline next to the field</td></tr>
+                    <tr><td><code>MinimumValue</code></td><td>Lower bound for RangeValidator</td></tr>
+                    <tr><td><code>MaximumValue</code></td><td>Upper bound for RangeValidator</td></tr>
+                    <tr><td><code>Type</code></td><td>Data type for RangeValidator (Integer, Date, etc.)</td></tr>
+                    <tr><td><code>ControlToCompare</code></td><td>Field to compare against in CompareValidator</td></tr>
+                    <tr><td><code>Operator</code></td><td>Comparison type: Equal, NotEqual, GreaterThan, etc.</td></tr>
+                    <tr><td><code>Page.IsValid</code></td><td>True only if all validators pass</td></tr>
+                    <tr><td><code>TextMode="Password"</code></td><td>Hides password input characters</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 16. Troubleshooting -->
+    <section id="trouble">
+        <h2><span class="sec-num">16</span> Troubleshooting</h2>
+
+        <div class="trouble-card">
+            <h3>Form submits even with empty fields</h3>
+            <p>Check the following:</p>
+            <ul>
+                <li><code>ControlToValidate</code> is set to the correct TextBox ID.</li>
+                <li><code>runat="server"</code> is present on both the TextBox and Validator.</li>
+                <li>The TextBox <code>ID</code> matches exactly with <code>ControlToValidate</code>.</li>
+            </ul>
+        </div>
+
+        <div class="trouble-card">
+            <h3>RangeValidator always shows an error</h3>
+            <p>Check the following:</p>
+            <ul>
+                <li><code>Type="Integer"</code> is set (not <code>Type="String"</code>).</li>
+                <li><code>MinimumValue</code> and <code>MaximumValue</code> are correct numbers.</li>
+                <li>The user is entering a numeric value, not text.</li>
+            </ul>
+        </div>
+
+        <div class="trouble-card">
+            <h3>CompareValidator not detecting mismatch</h3>
+            <p>Check the following:</p>
+            <ul>
+                <li><code>ControlToValidate</code> is set to the <strong>Confirm Password</strong> TextBox.</li>
+                <li><code>ControlToCompare</code> is set to the original <strong>Password</strong> TextBox.</li>
+                <li><code>Operator="Equal"</code> is set on the CompareValidator.</li>
+                <li>Both TextBoxes have <code>TextMode="Password"</code>.</li>
+            </ul>
+        </div>
+
+        <div class="trouble-card">
+            <h3>Success message shows even when form is invalid</h3>
+            <p>Make sure <code>Page.IsValid</code> is checked inside the button click event:</p>
+            <div class="code-wrap">
+                <div class="code-header"><span class="lang-tag">c#</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+                <pre>
+if (Page.IsValid)
+{
+    lblSuccess.Text = "Registration successful! ...";
+}</pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- 17. Result -->
+    <section id="result">
+        <h2><span class="sec-num">17</span> Result</h2>
+        <div class="result-banner">
+            <div class="icon">✅</div>
+            <p>
+                A <strong>Registration Form</strong> is successfully created in ASP.NET Web Forms using
+                <strong>RequiredFieldValidator</strong>, <strong>RangeValidator</strong>, and
+                <strong>CompareValidator</strong>. The form validates all input fields automatically
+                before submission and displays a success message only when all validations pass.
+            </p>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    function copyCode(btn) {
+        const pre = btn.closest('.code-wrap').querySelector('pre');
+        const text = pre.innerText.trim();
+        navigator.clipboard.writeText(text).then(() => {
+            btn.classList.add('copied');
+            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Copied!`;
+            setTimeout(() => {
+                btn.classList.remove('copied');
+                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy`;
+            }, 2000);
+        });
+    }
+
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('#toc a');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(a => a.classList.remove('active'));
+                const active = document.querySelector(`#toc a[href="#${entry.target.id}"]`);
+                if (active) active.classList.add('active');
+            }
+        });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+    sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

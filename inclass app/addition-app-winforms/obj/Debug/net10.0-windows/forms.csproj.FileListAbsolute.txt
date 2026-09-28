@@ -1,0 +1,14 @@
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\bin\Debug\net10.0-windows\forms.exe
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\bin\Debug\net10.0-windows\forms.deps.json
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\bin\Debug\net10.0-windows\forms.runtimeconfig.json
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\bin\Debug\net10.0-windows\forms.dll
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\bin\Debug\net10.0-windows\forms.pdb
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\obj\Debug\net10.0-windows\forms.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\obj\Debug\net10.0-windows\forms.AssemblyInfoInputs.cache
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\obj\Debug\net10.0-windows\forms.AssemblyInfo.cs
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\obj\Debug\net10.0-windows\forms.csproj.CoreCompileInputs.cache
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\obj\Debug\net10.0-windows\forms.dll
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\obj\Debug\net10.0-windows\refint\forms.dll
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\obj\Debug\net10.0-windows\forms.pdb
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\obj\Debug\net10.0-windows\forms.genruntimeconfig.cache
+C:\Users\nitin\OneDrive\Desktop\college\Sem-3\.net\inclass app\addition-app-winforms\obj\Debug\net10.0-windows\ref\forms.dll

@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Practical 3 – Student CRUD with ADO.NET | ASP.NET</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:          #0f1117;
+            --surface:     #1a1d27;
+            --surface2:    #22263a;
+            --border:      #2e3250;
+            --accent:      #6c63ff;
+            --accent-soft: #3d3a6e;
+            --green:       #3ecf8e;
+            --yellow:      #f5c842;
+            --red:         #ff6b6b;
+            --teal:        #38bdf8;
+            --text:        #e2e4f0;
+            --text-muted:  #8b90b0;
+            --code-bg:     #12141e;
+            --sidebar-w:   265px;
+            --radius:      10px;
+            --font:        'Inter', sans-serif;
+            --mono:        'JetBrains Mono', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+            font-size: 15px;
+            line-height: 1.75;
+        }
+
+        /* ── Sidebar ─────────────────────────────── */
+        #sidebar {
+            width: var(--sidebar-w);
+            flex-shrink: 0;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            overflow-y: auto;
+            padding: 28px 0 40px;
+            z-index: 100;
+        }
+
+        #sidebar .brand {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        #sidebar .brand span {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 3px 9px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        #sidebar .brand h1 { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.4; }
+
+        #sidebar nav a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 20px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s, background 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        #sidebar nav a:hover,
+        #sidebar nav a.active {
+            color: var(--text);
+            background: var(--surface2);
+            border-left-color: var(--accent);
+        }
+
+        #sidebar nav a .num { font-size: 11px; color: var(--accent); font-weight: 700; min-width: 20px; }
+
+        /* ── Main ──────────────────────────────────── */
+        #main { margin-left: var(--sidebar-w); flex: 1; padding: 48px 60px 80px; max-width: 970px; }
+
+        /* ── Page Header ───────────────────────────── */
+        .page-header { border-bottom: 1px solid var(--border); padding-bottom: 28px; margin-bottom: 48px; }
+
+        .page-header .badge {
+            display: inline-block;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 12px; font-weight: 700;
+            letter-spacing: 0.8px; text-transform: uppercase;
+            padding: 4px 12px; border-radius: 20px; margin-bottom: 14px;
+        }
+
+        .page-header h1 { font-size: 30px; font-weight: 700; line-height: 1.3; color: #fff; margin-bottom: 14px; }
+
+        .page-header .meta { display: flex; gap: 20px; flex-wrap: wrap; }
+        .page-header .meta span { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+        .page-header .meta .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; }
+
+        /* CRUD badge row */
+        .crud-badges { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
+        .crud-badge {
+            padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+            letter-spacing: 0.5px; text-transform: uppercase;
+        }
+        .crud-badge.active   { background: #1a3d2a; color: var(--green); border: 1px solid var(--green); }
+        .crud-badge.inactive { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); text-decoration: line-through; }
+
+        /* ── Sections ──────────────────────────────── */
+        section { margin-bottom: 52px; scroll-margin-top: 24px; }
+
+        section h2 {
+            font-size: 20px; font-weight: 700; color: #fff;
+            margin-bottom: 18px; display: flex; align-items: center; gap: 12px;
+        }
+
+        section h2 .sec-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; border-radius: 8px;
+            background: var(--accent-soft); color: var(--accent);
+            font-size: 13px; font-weight: 700; flex-shrink: 0;
+        }
+
+        section h3 { font-size: 15px; font-weight: 600; color: var(--text); margin: 22px 0 10px; }
+        section p  { color: var(--text-muted); margin-bottom: 14px; }
+
+        section ul { list-style: none; padding: 0; margin-bottom: 14px; }
+        section ul li { color: var(--text-muted); padding: 4px 0 4px 20px; position: relative; }
+        section ul li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-size: 12px; }
+
+        /* ── Note boxes ────────────────────────────── */
+        .note {
+            background: var(--surface2); border-left: 4px solid var(--accent);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            padding: 14px 18px; margin: 16px 0; font-size: 13.5px; color: var(--text-muted);
+        }
+        .note strong { color: var(--text); }
+
+        .note-warning {
+            background: #2a1f10; border-left: 4px solid var(--yellow);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            padding: 14px 18px; margin: 16px 0; font-size: 13.5px; color: #c9a84c;
+        }
+        .note-warning strong { color: var(--yellow); }
+
+        /* ── Code blocks ───────────────────────────── */
+        .code-wrap {
+            position: relative; margin: 16px 0;
+            border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border);
+        }
+
+        .code-header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--surface2); padding: 8px 14px; border-bottom: 1px solid var(--border);
+        }
+
+        .code-header .lang-tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); }
+
+        .copy-btn {
+            display: flex; align-items: center; gap: 5px;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-muted); font-family: var(--font);
+            font-size: 11.5px; font-weight: 500; padding: 4px 10px;
+            border-radius: 5px; cursor: pointer; transition: all 0.2s;
+        }
+
+        .copy-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .copy-btn.copied { background: var(--green); border-color: var(--green); color: #0f1117; }
+        .copy-btn svg { width: 13px; height: 13px; }
+
+        pre {
+            background: var(--code-bg); padding: 20px; overflow-x: auto;
+            font-family: var(--mono); font-size: 13px; line-height: 1.7;
+        }
+
+        code { font-family: var(--mono); }
+
+        .diagram-wrap pre {
+            background: var(--surface2); color: var(--text-muted);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            padding: 18px 20px; font-size: 13px; line-height: 1.9;
+        }
+
+        /* ── Tables ────────────────────────────────── */
+        .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        th { background: var(--surface2); color: var(--text); font-weight: 600; text-align: left; padding: 11px 14px; border-bottom: 2px solid var(--accent); }
+        td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+        td code, th code { background: var(--surface2); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; font-size: 12px; color: var(--accent); }
+        tr:hover td { background: var(--surface2); }
+
+        /* ── Steps ─────────────────────────────────── */
+        .steps { counter-reset: step; list-style: none; padding: 0; }
+        .steps li {
+            counter-increment: step; padding: 10px 0 10px 26px;
+            position: relative; color: var(--text-muted);
+            border-left: 2px solid var(--border); margin-left: 14px;
+        }
+        .steps li::before {
+            content: counter(step); position: absolute; left: -14px; top: 10px;
+            width: 26px; height: 26px; border-radius: 50%;
+            background: var(--accent); color: #fff;
+            font-size: 12px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ── Method cards ──────────────────────────── */
+        .method-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px;
+        }
+        .method-card h3 { margin: 0 0 12px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+        .method-card.insert h3 { color: var(--green); }
+        .method-card.load   h3 { color: var(--teal); }
+        .method-card.safe   h3 { color: var(--yellow); }
+        .method-card h3::before { font-size: 16px; }
+        .method-card.insert h3::before { content: '➕'; }
+        .method-card.load   h3::before { content: '📋'; }
+        .method-card.safe   h3::before { content: '🔒'; }
+
+        /* ── Flow pair ─────────────────────────────── */
+        .flow-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+        .flow-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
+        .flow-box h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+        .flow-box.load-flow h4 { color: var(--teal); }
+        .flow-box.insert-flow h4 { color: var(--green); }
+        .flow-box pre { background: transparent; padding: 0; font-size: 12.5px; color: var(--text-muted); line-height: 1.8; }
+
+        /* ── Trouble cards ─────────────────────────── */
+        .trouble-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 20px 24px; margin-bottom: 16px;
+        }
+        .trouble-card h3 { margin: 0 0 10px; color: var(--red); font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .trouble-card h3::before { content: '⚠'; font-size: 15px; }
+        .trouble-card p  { font-size: 13.5px; margin-bottom: 10px; }
+        .trouble-card ul li { font-size: 13.5px; }
+
+        /* ── Result banner ─────────────────────────── */
+        .result-banner {
+            background: linear-gradient(135deg, #1e2a4a, #1a2d3f);
+            border: 1px solid var(--accent);
+            border-radius: var(--radius); padding: 24px 28px;
+            display: flex; align-items: flex-start; gap: 16px;
+        }
+        .result-banner .icon { font-size: 28px; flex-shrink: 0; }
+        .result-banner p { color: var(--text); margin: 0; font-size: 14.5px; line-height: 1.8; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        @media (max-width: 800px) {
+            #sidebar { display: none; }
+            #main { margin-left: 0; padding: 28px 20px 60px; }
+            .flow-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════  SIDEBAR  ═══════════ -->
+<aside id="sidebar">
+    <div class="brand">
+        <span>ADO.NET</span>
+        <h1>Practical 3<br/>Student CRUD</h1>
+    </div>
+    <nav id="toc">
+        <a href="#aim"       ><span class="num">01</span> Aim</a>
+        <a href="#intro"     ><span class="num">02</span> Introduction</a>
+        <a href="#tech"      ><span class="num">03</span> Technology Used</a>
+        <a href="#db"        ><span class="num">04</span> Database Setup</a>
+        <a href="#create"    ><span class="num">05</span> Create Project</a>
+        <a href="#structure" ><span class="num">06</span> Folder Structure</a>
+        <a href="#pagestr"   ><span class="num">07</span> Page Structure</a>
+        <a href="#design"    ><span class="num">08</span> Page Design</a>
+        <a href="#dbconn"    ><span class="num">09</span> Configure DB Connection</a>
+        <a href="#aspx"      ><span class="num">10</span> Default.aspx</a>
+        <a href="#codebehind"><span class="num">11</span> Default.aspx.cs</a>
+        <a href="#methods"   ><span class="num">12</span> Key Methods</a>
+        <a href="#flow"      ><span class="num">13</span> How It Works</a>
+        <a href="#output"    ><span class="num">14</span> Expected Output</a>
+        <a href="#controls"  ><span class="num">15</span> Classes Table</a>
+        <a href="#trouble"   ><span class="num">16</span> Troubleshooting</a>
+        <a href="#result"    ><span class="num">17</span> Result</a>
+    </nav>
+</aside>
+
+<!-- ═══════════  MAIN  ═══════════ -->
+<main id="main">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="badge">Practical 3</div>
+        <h1>Student CRUD Operations<br/>Using ADO.NET</h1>
+        <div class="meta">
+            <span><span class="dot"></span> ASP.NET Web Forms</span>
+            <span>· ADO.NET</span>
+            <span>· SQL Server</span>
+        </div>
+        <div class="crud-badges" style="margin-top:16px;">
+            <span class="crud-badge active">✔ Create (Insert)</span>
+            <span class="crud-badge active">✔ Read (Display)</span>
+            <span class="crud-badge inactive">Update</span>
+            <span class="crud-badge inactive">Delete</span>
+        </div>
+    </div>
+
+    <!-- 1. Aim -->
+    <section id="aim">
+        <h2><span class="sec-num">1</span> Aim</h2>
+        <p>To develop an ASP.NET Web Forms application that performs:</p>
+        <ul>
+            <li><strong>Insert</strong> — Add a new student record to the database</li>
+            <li><strong>Display</strong> — Show all student records in a GridView</li>
+        </ul>
+        <p>using <strong>ADO.NET</strong> with a SQL Server <strong>Student</strong> table.</p>
+    </section>
+
+    <!-- 2. Introduction -->
+    <section id="intro">
+        <h2><span class="sec-num">2</span> Introduction</h2>
+        <p><strong>ADO.NET</strong> (ActiveX Data Objects .NET) is a data access technology used to connect ASP.NET applications with databases such as SQL Server. It provides classes to open connections, execute queries, and read results.</p>
+        <p><strong>CRUD</strong> stands for:</p>
+        <div class="diagram-wrap">
+            <pre>
+C  →  Create  (INSERT)
+R  →  Read    (SELECT / Display)
+U  →  Update
+D  →  Delete</pre>
+        </div>
+        <p>In this practical, only <strong>Insert</strong> and <strong>Display</strong> are implemented. The flow is:</p>
+        <div class="diagram-wrap">
+            <pre>
+User fills Student Form
+          ↓
+Clicks Insert Button
+          ↓
+ADO.NET sends INSERT query to SQL Server
+          ↓
+Record saved in Student table
+          ↓
+LoadStudents() called
+          ↓
+GridView refreshed with updated data</pre>
+        </div>
+    </section>
+
+    <!-- 3. Technology Used -->
+    <section id="tech">
+        <h2><span class="sec-num">3</span> Technology Used</h2>
+        <ul>
+            <li>C#</li>
+            <li>ASP.NET Web Forms</li>
+            <li>ADO.NET</li>
+            <li>SQL Server</li>
+            <li>Visual Studio</li>
+        </ul>
+        <div class="note">
+            <strong>Note:</strong> This practical uses a <strong>.NET Framework ASP.NET Web Forms project</strong>, not the modern ASP.NET Core templates.
+        </div>
+    </section>
+
+    <!-- 4. Database Setup -->
+    <section id="db">
+        <h2><span class="sec-num">4</span> Database Setup</h2>
+        <p>Open <strong>SQL Server Management Studio (SSMS)</strong> and execute the following scripts in order.</p>
+
+        <h3>Create the Database</h3>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">sql</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>CREATE DATABASE CollegeDB;</pre>
+        </div>
+
+        <h3>Select the Database</h3>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">sql</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>USE CollegeDB;</pre>
+        </div>
+
+        <h3>Create the Student Table</h3>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">sql</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>
+CREATE TABLE Student
+(
+    StudentID   INT PRIMARY KEY IDENTITY(1,1),
+    StudentName VARCHAR(100) NOT NULL,
+    Age         INT,
+    City        VARCHAR(100)
+);</pre>
+        </div>
+
+        <h3>Insert Sample Data</h3>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">sql</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>
+INSERT INTO Student (StudentName, Age, City)
+VALUES
+('Rahul',  20, 'Vadodara'),
+('Priya',  21, 'Ahmedabad'),
+('Amit',   20, 'Surat'),
+('Neha',   22, 'Rajkot');</pre>
+        </div>
+
+        <h3>Verify the Records</h3>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">sql</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>SELECT * FROM Student;</pre>
+        </div>
+
+        <p>Expected result:</p>
+        <div class="diagram-wrap">
+            <pre>
+StudentID   StudentName   Age   City
+---------------------------------------
+1           Rahul         20    Vadodara
+2           Priya         21    Ahmedabad
+3           Amit          20    Surat
+4           Neha          22    Rajkot</pre>
+        </div>
+    </section>
+
+    <!-- 5. Create Project -->
+    <section id="create">
+        <h2><span class="sec-num">5</span> Create ASP.NET Web Forms Application</h2>
+        <ol class="steps">
+            <li>Open <strong>Visual Studio</strong> and click <strong>Create a new project</strong>.</li>
+            <li>Search for and select <strong>ASP.NET Web Application (.NET Framework)</strong>.</li>
+            <li>Click <strong>Next</strong>.</li>
+            <li>Enter the project name:
+                <div class="code-wrap" style="margin-top:10px;">
+                    <div class="code-header"><span class="lang-tag">text</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+                    <pre>Project Name: StudentCRUD</pre>
+                </div>
+            </li>
+            <li>Select the required location and click <strong>Create</strong>.</li>
+            <li>Select <strong>Web Forms</strong> and click <strong>Create</strong>.</li>
+        </ol>
+    </section>
+
+    <!-- 6. Folder Structure -->
+    <section id="structure">
+        <h2><span class="sec-num">6</span> Project Folder Structure</h2>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">text</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>
+StudentCRUD/
+│
+├── App_Data/
+├── Content/
+├── Scripts/
+│
+├── Default.aspx
+├── Default.aspx.cs
+├── Default.aspx.designer.cs
+│
+├── Global.asax
+├── Site.Master
+├── Web.config
+│
+└── StudentCRUD.csproj</pre>
+        </div>
+        <div class="tbl-wrap">
+            <table>
+                <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td><code>Default.aspx</code></td><td>Insert form UI and GridView for display</td></tr>
+                    <tr><td><code>Default.aspx.cs</code></td><td>C# code for Insert and Display logic</td></tr>
+                    <tr><td><code>Default.aspx.designer.cs</code></td><td>Auto-generated control declarations</td></tr>
+                    <tr><td><code>Web.config</code></td><td>Database connection string configuration</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 7. Page Structure -->
+    <section id="pagestr">
+        <h2><span class="sec-num">7</span> Page Structure</h2>
+        <div class="diagram-wrap">
+            <pre>
+Default.aspx
+     ↓
+  ┌─────────────────────────────┐
+  │      INSERT STUDENT         │
+  │  Name : [TextBox]           │
+  │  Age  : [TextBox]           │
+  │  City : [TextBox]           │
+  │  [Insert Button]            │
+  │  [Message Label]            │
+  └─────────────────────────────┘
+  ┌─────────────────────────────┐
+  │    STUDENT RECORDS          │
+  │  GridView → all students    │
+  └─────────────────────────────┘
+
+Default.aspx.cs
+     ↓
+  ├── Page_Load      → calls LoadStudents() on first load
+  ├── LoadStudents() → SELECT * FROM Student → DataBind
+  └── btnInsert_Click() → INSERT INTO Student → LoadStudents()</pre>
+        </div>
+    </section>
+
+    <!-- 8. Page Design -->
+    <section id="design">
+        <h2><span class="sec-num">8</span> Design the Webpage</h2>
+        <div class="diagram-wrap">
+            <pre>
+┌──────────────────────────────────────────────────┐
+│                                                  │
+│               ADD NEW STUDENT                    │
+│                                                  │
+│   Student Name : [_______________________]       │
+│   Age          : [_______________________]       │
+│   City         : [_______________________]       │
+│                                                  │
+│                 [ Insert ]                       │
+│                                                  │
+│   ✔ Student inserted successfully!               │
+│                                                  │
+├──────────────────────────────────────────────────┤
+│                STUDENT RECORDS                   │
+│                                                  │
+│  ID | Student Name | Age | City                  │
+│  ---+-------------+-----+-----------            │
+│  1  | Rahul       |  20 | Vadodara              │
+│  2  | Priya       |  21 | Ahmedabad             │
+│  3  | Amit        |  20 | Surat                 │
+│  4  | Neha        |  22 | Rajkot                │
+│                                                  │
+└──────────────────────────────────────────────────┘</pre>
+        </div>
+    </section>
+
+    <!-- 9. Configure DB Connection -->
+    <section id="dbconn">
+        <h2><span class="sec-num">9</span> Configure Database Connection</h2>
+        <p>Open <code>Web.config</code> and add the <code>&lt;connectionStrings&gt;</code> section inside <code>&lt;configuration&gt;</code>:</p>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">xml</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>
+&lt;configuration&gt;
+
+    &lt;connectionStrings&gt;
+
+        &lt;add name="CollegeDBConnection"
+             connectionString="Server=.\SQLEXPRESS;Database=CollegeDB;Trusted_Connection=True;TrustServerCertificate=True;"
+             providerName="System.Data.SqlClient" /&gt;
+
+    &lt;/connectionStrings&gt;
+
+&lt;/configuration&gt;</pre>
+        </div>
+        <div class="note">
+            <strong>Note:</strong> If your SQL Server instance name is different, change <code>.\SQLEXPRESS</code> to <code>localhost</code> or <code>(local)</code> as required.
+        </div>
+        <p>Why store the connection string in <code>Web.config</code>?</p>
+        <div class="diagram-wrap">
+            <pre>
+Web.config
+     ↓
+Connection String stored once
+     ↓
+C# reads it using ConfigurationManager
+     ↓
+No hardcoded strings in code
+     ↓
+Easy to change without modifying C# files</pre>
+        </div>
+    </section>
+
+    <!-- 10. Default.aspx -->
+    <section id="aspx">
+        <h2><span class="sec-num">10</span> Complete Default.aspx</h2>
+        <p>Replace the entire contents of <code>Default.aspx</code> with:</p>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">aspx</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>
+&lt;%@ Page Language="C#"
+    AutoEventWireup="true"
+    CodeBehind="Default.aspx.cs"
+    Inherits="StudentCRUD.Default" %&gt;
+
+&lt;!DOCTYPE html&gt;
+
+&lt;html&gt;
+&lt;head runat="server"&gt;
+
+    &lt;title&gt;Student CRUD&lt;/title&gt;
+
+    &lt;style&gt;
+
+        body
+        {
+            font-family: Arial;
+            margin: 40px;
+            background-color: #f0f4f8;
+        }
+
+        h2
+        {
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .form-box
+        {
+            background-color: white;
+            padding: 30px;
+            width: 460px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 36px;
+        }
+
+        .field
+        {
+            margin-bottom: 14px;
+        }
+
+        .field label
+        {
+            display: inline-block;
+            width: 130px;
+            font-weight: bold;
+            color: #444;
+            font-size: 14px;
+        }
+
+        .field input[type=text]
+        {
+            padding: 8px 10px;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type=submit]
+        {
+            margin-top: 10px;
+            padding: 9px 24px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        input[type=submit]:hover
+        {
+            background-color: #1e7e34;
+        }
+
+        .message
+        {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .grid-box
+        {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .grid-box table
+        {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .grid-box th
+        {
+            background-color: #343a40;
+            color: white;
+            padding: 10px 14px;
+            text-align: left;
+        }
+
+        .grid-box td
+        {
+            padding: 9px 14px;
+            border-bottom: 1px solid #dee2e6;
+            color: #333;
+        }
+
+        .grid-box tr:hover td
+        {
+            background-color: #f8f9fa;
+        }
+
+    &lt;/style&gt;
+
+&lt;/head&gt;
+
+&lt;body&gt;
+
+&lt;form id="form1" runat="server"&gt;
+
+    &lt;!-- Insert Form --&gt;
+    &lt;div class="form-box"&gt;
+
+        &lt;h2&gt;Add New Student&lt;/h2&gt;
+
+        &lt;div class="field"&gt;
+            &lt;label&gt;Student Name :&lt;/label&gt;
+            &lt;asp:TextBox ID="txtName" runat="server" /&gt;
+        &lt;/div&gt;
+
+        &lt;div class="field"&gt;
+            &lt;label&gt;Age :&lt;/label&gt;
+            &lt;asp:TextBox ID="txtAge" runat="server" /&gt;
+        &lt;/div&gt;
+
+        &lt;div class="field"&gt;
+            &lt;label&gt;City :&lt;/label&gt;
+            &lt;asp:TextBox ID="txtCity" runat="server" /&gt;
+        &lt;/div&gt;
+
+        &lt;asp:Button
+            ID="btnInsert"
+            runat="server"
+            Text="Insert"
+            OnClick="btnInsert_Click" /&gt;
+
+        &lt;div class="message"&gt;
+            &lt;asp:Label ID="lblMessage" runat="server" Text="" /&gt;
+        &lt;/div&gt;
+
+    &lt;/div&gt;
+
+    &lt;!-- Display GridView --&gt;
+    &lt;div class="grid-box"&gt;
+
+        &lt;h2&gt;Student Records&lt;/h2&gt;
+
+        &lt;asp:GridView
+            ID="gvStudents"
+            runat="server"
+            AutoGenerateColumns="False"&gt;
+
+            &lt;Columns&gt;
+
+                &lt;asp:BoundField
+                    DataField="StudentID"
+                    HeaderText="ID" /&gt;
+
+                &lt;asp:BoundField
+                    DataField="StudentName"
+                    HeaderText="Student Name" /&gt;
+
+                &lt;asp:BoundField
+                    DataField="Age"
+                    HeaderText="Age" /&gt;
+
+                &lt;asp:BoundField
+                    DataField="City"
+                    HeaderText="City" /&gt;
+
+            &lt;/Columns&gt;
+
+        &lt;/asp:GridView&gt;
+
+    &lt;/div&gt;
+
+&lt;/form&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+        </div>
+    </section>
+
+    <!-- 11. Default.aspx.cs -->
+    <section id="codebehind">
+        <h2><span class="sec-num">11</span> Complete Default.aspx.cs</h2>
+        <p>Replace the contents of <code>Default.aspx.cs</code> with:</p>
+        <div class="code-wrap">
+            <div class="code-header"><span class="lang-tag">c#</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+            <pre>
+using System;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+
+namespace StudentCRUD
+{
+    public partial class Default : System.Web.UI.Page
+    {
+        protected void Page_Load(
+            object sender,
+            EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                LoadStudents();
+            }
+        }
+
+        private void LoadStudents()
+        {
+            string conStr =
+                ConfigurationManager
+                .ConnectionStrings["CollegeDBConnection"]
+                .ConnectionString;
+
+            using (SqlConnection con =
+                new SqlConnection(conStr))
+            {
+                string query = "SELECT * FROM Student";
+
+                using (SqlCommand cmd =
+                    new SqlCommand(query, con))
+                {
+                    con.Open();
+
+                    using (SqlDataReader reader =
+                        cmd.ExecuteReader())
+                    {
+                        DataTable dt = new DataTable();
+
+                        dt.Load(reader);
+
+                        gvStudents.DataSource = dt;
+
+                        gvStudents.DataBind();
+                    }
+                }
+            }
+        }
+
+        protected void btnInsert_Click(
+            object sender,
+            EventArgs e)
+        {
+            string conStr =
+                ConfigurationManager
+                .ConnectionStrings["CollegeDBConnection"]
+                .ConnectionString;
+
+            using (SqlConnection con =
+                new SqlConnection(conStr))
+            {
+                string query =
+                    "INSERT INTO Student " +
+                    "(StudentName, Age, City) " +
+                    "VALUES (@Name, @Age, @City)";
+
+                using (SqlCommand cmd =
+                    new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue(
+                        "@Name", txtName.Text.Trim());
+
+                    cmd.Parameters.AddWithValue(
+                        "@Age", int.Parse(txtAge.Text.Trim()));
+
+                    cmd.Parameters.AddWithValue(
+                        "@City", txtCity.Text.Trim());
+
+                    con.Open();
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            lblMessage.Text =
+                "Student inserted successfully!";
+
+            txtName.Text = "";
+            txtAge.Text  = "";
+            txtCity.Text = "";
+
+            LoadStudents();
+        }
+    }
+}</pre>
+        </div>
+    </section>
+
+    <!-- 12. Key Methods -->
+    <section id="methods">
+        <h2><span class="sec-num">12</span> Understanding the Key Methods</h2>
+
+        <div class="method-card load">
+            <h3>LoadStudents()</h3>
+            <p>Retrieves all student records from SQL Server and displays them in the GridView.</p>
+            <div class="diagram-wrap">
+                <pre>
+LoadStudents()
+     ↓
+Open SqlConnection
+     ↓
+Execute: SELECT * FROM Student
+     ↓
+SqlDataReader reads all rows
+     ↓
+DataTable stores the rows
+     ↓
+gvStudents.DataSource = dt
+     ↓
+gvStudents.DataBind()
+     ↓
+GridView displays all records</pre>
+            </div>
+        </div>
+
+        <div class="method-card insert">
+            <h3>btnInsert_Click()</h3>
+            <p>Inserts a new student record when the Insert button is clicked.</p>
+            <div class="diagram-wrap">
+                <pre>
+btnInsert_Click()
+     ↓
+Read txtName, txtAge, txtCity values
+     ↓
+Build parameterized INSERT query
+     ↓
+cmd.Parameters.AddWithValue(...)
+     ↓
+con.Open()
+     ↓
+cmd.ExecuteNonQuery()
+     ↓
+Record saved in SQL Server
+     ↓
+TextBoxes cleared
+     ↓
+Call LoadStudents()
+     ↓
+GridView refreshed with new record</pre>
+            </div>
+        </div>
+
+        <div class="method-card safe">
+            <h3>Why Use Parameterized Queries?</h3>
+            <div class="code-wrap">
+                <div class="code-header"><span class="lang-tag">c# — unsafe (do not use)</span></div>
+                <pre>"INSERT INTO Student VALUES('" + txtName.Text + "')"</pre>
+            </div>
+            <div class="note-warning">
+                <strong>Risk:</strong> Direct string concatenation allows SQL Injection attacks.
+            </div>
+            <div class="code-wrap">
+                <div class="code-header"><span class="lang-tag">c# — safe (use this)</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+                <pre>cmd.Parameters.AddWithValue("@Name", txtName.Text.Trim());</pre>
+            </div>
+            <div class="note">
+                <strong>Safe:</strong> Parameterized queries prevent SQL Injection and handle special characters automatically.
+            </div>
+        </div>
+    </section>
+
+    <!-- 13. How It Works -->
+    <section id="flow">
+        <h2><span class="sec-num">13</span> How the Application Works</h2>
+        <div class="flow-grid">
+            <div class="flow-box load-flow">
+                <h4>📋 On Page Load</h4>
+                <pre>
+Page opens
+     ↓
+Page_Load fires
+     ↓
+!IsPostBack = true
+     ↓
+LoadStudents()
+     ↓
+All students shown
+in GridView</pre>
+            </div>
+            <div class="flow-box insert-flow">
+                <h4>➕ On Insert</h4>
+                <pre>
+User fills form
+     ↓
+Clicks Insert
+     ↓
+btnInsert_Click fires
+     ↓
+INSERT query runs
+     ↓
+Record saved
+     ↓
+TextBoxes cleared
+     ↓
+LoadStudents()
+     ↓
+GridView refreshed</pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- 14. Expected Output -->
+    <section id="output">
+        <h2><span class="sec-num">14</span> Expected Output</h2>
+        <p>After inserting <strong>"Karan, 23, Surat"</strong> and clicking Insert:</p>
+        <div class="diagram-wrap">
+            <pre>
+┌──────────────────────────────────────────────────┐
+│              ADD NEW STUDENT                     │
+│                                                  │
+│   Student Name : [_______________________]       │
+│   Age          : [_______________________]       │
+│   City         : [_______________________]       │
+│                 [ Insert ]                       │
+│   ✔ Student inserted successfully!               │
+├──────────────────────────────────────────────────┤
+│               STUDENT RECORDS                    │
+│                                                  │
+│  ID | Student Name | Age | City                  │
+│  ---+-------------+-----+------------           │
+│  1  | Rahul       |  20 | Vadodara              │
+│  2  | Priya       |  21 | Ahmedabad             │
+│  3  | Amit        |  20 | Surat                 │
+│  4  | Neha        |  22 | Rajkot                │
+│  5  | Karan       |  23 | Surat   ← new record  │
+│                                                  │
+└──────────────────────────────────────────────────┘</pre>
+        </div>
+    </section>
+
+    <!-- 15. Classes Table -->
+    <section id="controls">
+        <h2><span class="sec-num">15</span> Important Classes and Methods</h2>
+        <div class="tbl-wrap">
+            <table>
+                <thead><tr><th>Class / Method</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td><code>SqlConnection</code></td><td>Opens a connection to SQL Server</td></tr>
+                    <tr><td><code>SqlCommand</code></td><td>Executes a SQL query</td></tr>
+                    <tr><td><code>SqlDataReader</code></td><td>Reads rows returned by a SELECT query</td></tr>
+                    <tr><td><code>DataTable</code></td><td>Stores retrieved rows in memory</td></tr>
+                    <tr><td><code>ExecuteNonQuery()</code></td><td>Executes INSERT / UPDATE / DELETE</td></tr>
+                    <tr><td><code>ExecuteReader()</code></td><td>Executes SELECT and returns a reader</td></tr>
+                    <tr><td><code>Parameters.AddWithValue()</code></td><td>Adds a safe parameterized value to the query</td></tr>
+                    <tr><td><code>DataBind()</code></td><td>Binds the DataTable to the GridView</td></tr>
+                    <tr><td><code>DataSource</code></td><td>Sets the data source of the GridView</td></tr>
+                    <tr><td><code>ConfigurationManager</code></td><td>Reads the connection string from Web.config</td></tr>
+                    <tr><td><code>!IsPostBack</code></td><td>Ensures LoadStudents runs only on first page load</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 16. Troubleshooting -->
+    <section id="trouble">
+        <h2><span class="sec-num">16</span> Troubleshooting</h2>
+
+        <div class="trouble-card">
+            <h3>Error: "Cannot open database CollegeDB"</h3>
+            <p>Check the following:</p>
+            <ul>
+                <li>SQL Server service is running.</li>
+                <li><code>CollegeDB</code> database exists in SSMS.</li>
+                <li>The server name in <code>Web.config</code> is correct (<code>.\SQLEXPRESS</code> or <code>localhost</code>).</li>
+            </ul>
+        </div>
+
+        <div class="trouble-card">
+            <h3>Error: "Invalid object name 'Student'"</h3>
+            <p>The table does not exist. Run this in SSMS:</p>
+            <div class="code-wrap">
+                <div class="code-header"><span class="lang-tag">sql</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+                <pre>
+USE CollegeDB;
+
+CREATE TABLE Student
+(
+    StudentID   INT PRIMARY KEY IDENTITY(1,1),
+    StudentName VARCHAR(100) NOT NULL,
+    Age         INT,
+    City        VARCHAR(100)
+);</pre>
+            </div>
+        </div>
+
+        <div class="trouble-card">
+            <h3>Error: "The name 'ConfigurationManager' does not exist"</h3>
+            <p>Add the missing namespace at the top of <code>Default.aspx.cs</code>:</p>
+            <div class="code-wrap">
+                <div class="code-header"><span class="lang-tag">c#</span><button class="copy-btn" onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button></div>
+                <pre>using System.Configuration;</pre>
+            </div>
+        </div>
+
+        <div class="trouble-card">
+            <h3>Error: "Input string was not in a correct format"</h3>
+            <p>This happens when the Age TextBox contains non-numeric text. The code uses <code>int.Parse()</code> which throws an error if the value is not a valid integer. Make sure the user enters a number in the Age field.</p>
+        </div>
+
+        <div class="trouble-card">
+            <h3>GridView shows empty after Insert</h3>
+            <p>Check the following:</p>
+            <ul>
+                <li><code>LoadStudents()</code> is called at the end of <code>btnInsert_Click</code>.</li>
+                <li>The INSERT query executed without errors.</li>
+                <li><code>gvStudents.DataBind()</code> is called inside <code>LoadStudents()</code>.</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 17. Result -->
+    <section id="result">
+        <h2><span class="sec-num">17</span> Result</h2>
+        <div class="result-banner">
+            <div class="icon">✅</div>
+            <p>
+                A <strong>Student CRUD application</strong> using <strong>ADO.NET</strong> is successfully
+                developed in ASP.NET Web Forms. The application connects to a SQL Server database,
+                inserts new student records using <strong>parameterized queries</strong>, and displays
+                all records in a <strong>GridView</strong> using Data Binding.
+            </p>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    function copyCode(btn) {
+        const pre = btn.closest('.code-wrap').querySelector('pre');
+        const text = pre.innerText.trim();
+        navigator.clipboard.writeText(text).then(() => {
+            btn.classList.add('copied');
+            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Copied!`;
+            setTimeout(() => {
+                btn.classList.remove('copied');
+                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy`;
+            }, 2000);
+        });
+    }
+
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks  = document.querySelectorAll('#toc a');
+    const observer  = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(a => a.classList.remove('active'));
+                const active = document.querySelector(`#toc a[href="#${entry.target.id}"]`);
+                if (active) active.classList.add('active');
+            }
+        });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+    sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
